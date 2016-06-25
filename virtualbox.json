@@ -1,0 +1,48 @@
+{
+  "variables": {
+    "version": "{{env `VERSION`}}"
+  },
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "sudo {{.Vars}} sh {{.Path}}",
+      "scripts": [
+        "scripts/vagrant.sh",
+        "scripts/vmtools.sh",
+        "scripts/zerodisk.sh",
+        "scripts/cleanup.sh"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "output": "build/Fedora-24-x86_64-{{.Provider}}.box"
+    }
+  ],
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "guest_additions_mode": "attach",
+      "guest_additions_sha256": "974063ca9c7bde796dd77ba55d35583dc5d8bc27d53a6bfd81ae206978b133e2",
+      "guest_os_type": "Fedora_64",
+      "headless": "false",
+      "vboxmanage": [
+        [ "modifyvm", "{{.Name}}", "--memory", "512" ],
+        [ "modifyvm", "{{.Name}}", "--cpus", "1" ]
+      ],
+      "iso_url": "http://mirror.nl.leaseweb.net/fedora/linux/releases/24/Workstation/x86_64/iso/Fedora-Workstation-netinst-x86_64-24-1.2.iso",
+      "iso_checksum": "1d0aaa3dadba90bbac211729c406072dd91f67c04315effb50fd8d9e0aa8f6c0",
+      "iso_checksum_type": "sha256",
+      "ssh_username": "packer",
+      "ssh_password": "packer",
+      "ssh_wait_timeout": "120m",
+      "boot_command": [ "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>" ],
+      "disk_size": "32768",
+      "hard_drive_interface": "sata",
+      "http_directory": "http",
+      "shutdown_command": "sudo /sbin/halt -p"
+    }
+  ]
+}
